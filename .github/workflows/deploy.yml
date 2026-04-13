@@ -59,6 +59,9 @@ jobs:
           region: '${{ env.GCP_REGION }}'
           project_id: '${{ env.GCP_PROJECT_ID }}'
           flags: '--allow-unauthenticated --use-http2 --port=8080'
+          env_vars: |
+            PORT=8080
+            DISABLE_PROFILER=1
       - name: Capture currencyservice addr
         id: currencyservice-addr
         run: echo "addr=$(echo '${{ steps.deploy-currencyservice.outputs.url }}' | sed 's|^https://||; s|/$||'):443" >> $GITHUB_OUTPUT
