@@ -97,6 +97,8 @@ jobs:
           region: '${{ env.GCP_REGION }}'
           project_id: '${{ env.GCP_PROJECT_ID }}'
           flags: '--allow-unauthenticated --use-http2 --port=8080'
+          env_vars: |
+            DISABLE_PROFILER=1
       - name: Capture paymentservice addr
         id: paymentservice-addr
         run: echo "addr=$(echo '${{ steps.deploy-paymentservice.outputs.url }}' | sed 's|^https://||; s|/$||'):443" >> $GITHUB_OUTPUT
