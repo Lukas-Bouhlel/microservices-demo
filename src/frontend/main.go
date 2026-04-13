@@ -129,22 +129,52 @@ func main() {
 		srvPort = os.Getenv("PORT")
 	}
 	addr := os.Getenv("LISTEN_ADDR")
-	mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR")
-	mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
-	mustMapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR")
-	mustMapEnv(&svc.recommendationSvcAddr, "RECOMMENDATION_SERVICE_ADDR")
-	mustMapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR")
-	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
-	mustMapEnv(&svc.adSvcAddr, "AD_SERVICE_ADDR")
-	mustMapEnv(&svc.shoppingAssistantSvcAddr, "SHOPPING_ASSISTANT_SERVICE_ADDR")
+	if !mapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR") {
+		log.Warn("PRODUCT_CATALOG_SERVICE_ADDR not set; product catalog disabled.")
+	}
+	if !mapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR") {
+		log.Warn("CURRENCY_SERVICE_ADDR not set; currency service disabled.")
+	}
+	if !mapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR") {
+		log.Warn("CART_SERVICE_ADDR not set; cart service disabled.")
+	}
+	if !mapEnv(&svc.recommendationSvcAddr, "RECOMMENDATION_SERVICE_ADDR") {
+		log.Warn("RECOMMENDATION_SERVICE_ADDR not set; recommendation service disabled.")
+	}
+	if !mapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR") {
+		log.Warn("CHECKOUT_SERVICE_ADDR not set; checkout service disabled.")
+	}
+	if !mapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR") {
+		log.Warn("SHIPPING_SERVICE_ADDR not set; shipping service disabled.")
+	}
+	if !mapEnv(&svc.adSvcAddr, "AD_SERVICE_ADDR") {
+		log.Warn("AD_SERVICE_ADDR not set; ad service disabled.")
+	}
+	if !mapEnv(&svc.shoppingAssistantSvcAddr, "SHOPPING_ASSISTANT_SERVICE_ADDR") {
+		log.Warn("SHOPPING_ASSISTANT_SERVICE_ADDR not set; assistant disabled.")
+	}
 
-	mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
-	mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
-	mustConnGRPC(ctx, &svc.cartSvcConn, svc.cartSvcAddr)
-	mustConnGRPC(ctx, &svc.recommendationSvcConn, svc.recommendationSvcAddr)
-	mustConnGRPC(ctx, &svc.shippingSvcConn, svc.shippingSvcAddr)
-	mustConnGRPC(ctx, &svc.checkoutSvcConn, svc.checkoutSvcAddr)
-	mustConnGRPC(ctx, &svc.adSvcConn, svc.adSvcAddr)
+	if svc.currencySvcAddr != "" {
+		mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
+	}
+	if svc.productCatalogSvcAddr != "" {
+		mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
+	}
+	if svc.cartSvcAddr != "" {
+		mustConnGRPC(ctx, &svc.cartSvcConn, svc.cartSvcAddr)
+	}
+	if svc.recommendationSvcAddr != "" {
+		mustConnGRPC(ctx, &svc.recommendationSvcConn, svc.recommendationSvcAddr)
+	}
+	if svc.shippingSvcAddr != "" {
+		mustConnGRPC(ctx, &svc.shippingSvcConn, svc.shippingSvcAddr)
+	}
+	if svc.checkoutSvcAddr != "" {
+		mustConnGRPC(ctx, &svc.checkoutSvcConn, svc.checkoutSvcAddr)
+	}
+	if svc.adSvcAddr != "" {
+		mustConnGRPC(ctx, &svc.adSvcConn, svc.adSvcAddr)
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc(baseUrl+"/", svc.homeHandler).Methods(http.MethodGet, http.MethodHead)
@@ -212,6 +242,15 @@ func initProfiling(log logrus.FieldLogger, service, version string) {
 		time.Sleep(d)
 	}
 	log.Warn("warning: could not initialize Stackdriver profiler after retrying, giving up")
+}
+
+func mapEnv(target *string, envKey string) bool {
+	v := os.Getenv(envKey)
+	if v == "" {
+		return false
+	}
+	*target = v
+	return true
 }
 
 func mustMapEnv(target *string, envKey string) {
