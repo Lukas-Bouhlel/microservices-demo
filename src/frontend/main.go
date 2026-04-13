@@ -129,22 +129,27 @@ func main() {
 		srvPort = os.Getenv("PORT")
 	}
 	addr := os.Getenv("LISTEN_ADDR")
-	mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR")
-	mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
-	mustMapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR")
-	mustMapEnv(&svc.recommendationSvcAddr, "RECOMMENDATION_SERVICE_ADDR")
-	mustMapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR")
-	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
-	mustMapEnv(&svc.adSvcAddr, "AD_SERVICE_ADDR")
-	mustMapEnv(&svc.shoppingAssistantSvcAddr, "SHOPPING_ASSISTANT_SERVICE_ADDR")
+	disableBackends := os.Getenv("DISABLE_BACKEND_SERVICES") == "1"
+	if disableBackends {
+		log.Warn("Backend services disabled via DISABLE_BACKEND_SERVICES=1")
+	} else {
+		mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR")
+		mustMapEnv(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR")
+		mustMapEnv(&svc.cartSvcAddr, "CART_SERVICE_ADDR")
+		mustMapEnv(&svc.recommendationSvcAddr, "RECOMMENDATION_SERVICE_ADDR")
+		mustMapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR")
+		mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
+		mustMapEnv(&svc.adSvcAddr, "AD_SERVICE_ADDR")
+		mustMapEnv(&svc.shoppingAssistantSvcAddr, "SHOPPING_ASSISTANT_SERVICE_ADDR")
 
-	mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
-	mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
-	mustConnGRPC(ctx, &svc.cartSvcConn, svc.cartSvcAddr)
-	mustConnGRPC(ctx, &svc.recommendationSvcConn, svc.recommendationSvcAddr)
-	mustConnGRPC(ctx, &svc.shippingSvcConn, svc.shippingSvcAddr)
-	mustConnGRPC(ctx, &svc.checkoutSvcConn, svc.checkoutSvcAddr)
-	mustConnGRPC(ctx, &svc.adSvcConn, svc.adSvcAddr)
+		mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
+		mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
+		mustConnGRPC(ctx, &svc.cartSvcConn, svc.cartSvcAddr)
+		mustConnGRPC(ctx, &svc.recommendationSvcConn, svc.recommendationSvcAddr)
+		mustConnGRPC(ctx, &svc.shippingSvcConn, svc.shippingSvcAddr)
+		mustConnGRPC(ctx, &svc.checkoutSvcConn, svc.checkoutSvcAddr)
+		mustConnGRPC(ctx, &svc.adSvcConn, svc.adSvcAddr)
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc(baseUrl+"/", svc.homeHandler).Methods(http.MethodGet, http.MethodHead)
