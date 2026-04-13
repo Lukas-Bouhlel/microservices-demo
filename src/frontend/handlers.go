@@ -320,10 +320,6 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 func (fe *frontendServer) placeOrderHandler(w http.ResponseWriter, r *http.Request) {
 	log := r.Context().Value(ctxKeyLog{}).(logrus.FieldLogger)
 	log.Debug("placing order")
-	if fe.checkoutSvcConn == nil {
-		renderHTTPError(log, r, w, errors.New("checkout service disabled"), http.StatusServiceUnavailable)
-		return
-	}
 
 	var (
 		email         = r.FormValue("email")
@@ -454,10 +450,6 @@ func (fe *frontendServer) getProductByID(w http.ResponseWriter, r *http.Request)
 
 func (fe *frontendServer) chatBotHandler(w http.ResponseWriter, r *http.Request) {
 	log := r.Context().Value(ctxKeyLog{}).(logrus.FieldLogger)
-	if fe.shoppingAssistantSvcAddr == "" {
-		renderHTTPError(log, r, w, errors.New("assistant service disabled"), http.StatusServiceUnavailable)
-		return
-	}
 	type Response struct {
 		Message string `json:"message"`
 	}

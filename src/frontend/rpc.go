@@ -27,12 +27,7 @@ const (
 	avoidNoopCurrencyConversionRPC = false
 )
 
-var defaultCurrencies = []string{"USD", "EUR", "CAD", "JPY", "GBP", "TRY"}
-
 func (fe *frontendServer) getCurrencies(ctx context.Context) ([]string, error) {
-	if fe.currencySvcConn == nil {
-		return defaultCurrencies, nil
-	}
 	currs, err := pb.NewCurrencyServiceClient(fe.currencySvcConn).
 		GetSupportedCurrencies(ctx, &pb.Empty{})
 	if err != nil {
@@ -48,43 +43,28 @@ func (fe *frontendServer) getCurrencies(ctx context.Context) ([]string, error) {
 }
 
 func (fe *frontendServer) getProducts(ctx context.Context) ([]*pb.Product, error) {
-	if fe.productCatalogSvcConn == nil {
-		return []*pb.Product{}, nil
-	}
 	resp, err := pb.NewProductCatalogServiceClient(fe.productCatalogSvcConn).
 		ListProducts(ctx, &pb.Empty{})
 	return resp.GetProducts(), err
 }
 
 func (fe *frontendServer) getProduct(ctx context.Context, id string) (*pb.Product, error) {
-	if fe.productCatalogSvcConn == nil {
-		return nil, errors.New("product catalog service disabled")
-	}
 	resp, err := pb.NewProductCatalogServiceClient(fe.productCatalogSvcConn).
 		GetProduct(ctx, &pb.GetProductRequest{Id: id})
 	return resp, err
 }
 
 func (fe *frontendServer) getCart(ctx context.Context, userID string) ([]*pb.CartItem, error) {
-	if fe.cartSvcConn == nil {
-		return []*pb.CartItem{}, nil
-	}
 	resp, err := pb.NewCartServiceClient(fe.cartSvcConn).GetCart(ctx, &pb.GetCartRequest{UserId: userID})
 	return resp.GetItems(), err
 }
 
 func (fe *frontendServer) emptyCart(ctx context.Context, userID string) error {
-	if fe.cartSvcConn == nil {
-		return nil
-	}
 	_, err := pb.NewCartServiceClient(fe.cartSvcConn).EmptyCart(ctx, &pb.EmptyCartRequest{UserId: userID})
 	return err
 }
 
 func (fe *frontendServer) insertCart(ctx context.Context, userID, productID string, quantity int32) error {
-	if fe.cartSvcConn == nil {
-		return errors.New("cart service disabled")
-	}
 	_, err := pb.NewCartServiceClient(fe.cartSvcConn).AddItem(ctx, &pb.AddItemRequest{
 		UserId: userID,
 		Item: &pb.CartItem{
@@ -95,9 +75,6 @@ func (fe *frontendServer) insertCart(ctx context.Context, userID, productID stri
 }
 
 func (fe *frontendServer) convertCurrency(ctx context.Context, money *pb.Money, currency string) (*pb.Money, error) {
-	if fe.currencySvcConn == nil {
-		return money, nil
-	}
 	if avoidNoopCurrencyConversionRPC && money.GetCurrencyCode() == currency {
 		return money, nil
 	}
@@ -108,9 +85,6 @@ func (fe *frontendServer) convertCurrency(ctx context.Context, money *pb.Money, 
 }
 
 func (fe *frontendServer) getShippingQuote(ctx context.Context, items []*pb.CartItem, currency string) (*pb.Money, error) {
-	if fe.shippingSvcConn == nil {
-		return &pb.Money{CurrencyCode: currency, Units: 0, Nanos: 0}, nil
-	}
 	quote, err := pb.NewShippingServiceClient(fe.shippingSvcConn).GetQuote(ctx,
 		&pb.GetQuoteRequest{
 			Address: nil,
@@ -123,9 +97,6 @@ func (fe *frontendServer) getShippingQuote(ctx context.Context, items []*pb.Cart
 }
 
 func (fe *frontendServer) getRecommendations(ctx context.Context, userID string, productIDs []string) ([]*pb.Product, error) {
-	if fe.recommendationSvcConn == nil {
-		return []*pb.Product{}, nil
-	}
 	resp, err := pb.NewRecommendationServiceClient(fe.recommendationSvcConn).ListRecommendations(ctx,
 		&pb.ListRecommendationsRequest{UserId: userID, ProductIds: productIDs})
 	if err != nil {
@@ -146,9 +117,6 @@ func (fe *frontendServer) getRecommendations(ctx context.Context, userID string,
 }
 
 func (fe *frontendServer) getAd(ctx context.Context, ctxKeys []string) ([]*pb.Ad, error) {
-	if fe.adSvcConn == nil {
-		return []*pb.Ad{}, nil
-	}
 	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*100)
 	defer cancel()
 
