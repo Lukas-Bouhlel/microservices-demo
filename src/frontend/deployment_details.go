@@ -44,12 +44,12 @@ func loadDeploymentDetails() {
 
 	podCluster, err := metaServerClient.InstanceAttributeValue("cluster-name")
 	if err != nil {
-		log.Error("Failed to fetch the name of the cluster in which the pod is running", err)
+		log.Debug("Cluster name metadata not available", err)
 	}
 
 	podZone, err := metaServerClient.Zone()
 	if err != nil {
-		log.Error("Failed to fetch the Zone of the node where the pod is scheduled", err)
+		log.Debug("Zone metadata not available", err)
 	}
 
 	deploymentDetailsMap["HOSTNAME"] = podHostname
