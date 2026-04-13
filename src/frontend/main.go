@@ -254,11 +254,9 @@ func mapEnv(target *string, envKey string) bool {
 }
 
 func mustMapEnv(target *string, envKey string) {
-	v := os.Getenv(envKey)
-	if v == "" {
+	if !mapEnv(target, envKey) {
 		panic(fmt.Sprintf("environment variable %q not set", envKey))
 	}
-	*target = v
 }
 
 func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
