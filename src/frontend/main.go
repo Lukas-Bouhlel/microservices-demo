@@ -16,9 +16,11 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/profiler"
@@ -32,6 +34,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -263,8 +266,12 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 	var err error
 	_, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
+	creds := grpc.WithTransportCredentials(insecure.NewCredentials())
+	if strings.HasSuffix(addr, ":443") {
+		creds = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
+	}
 	*conn, err = grpc.NewClient(addr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		creds,
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
 	if err != nil {
 		panic(errors.Wrapf(err, "grpc: failed to connect %s", addr))
